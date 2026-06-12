@@ -35,14 +35,14 @@ Displays the tools index view.
         </p>
 
         <div class="grid gap-8 mt-8 md:grid-cols-2">
-            <x-tools.tinkerwell />
+            {{-- <x-tools.tinkerwell />
             <x-tools.tower />
             <x-tools.fathom-analytics />
             <x-tools.cloudways />
             <x-tools.mailcoach />
             <x-tools.wincher />
             <x-tools.uptimia />
-            <x-tools.digitalocean />
+            <x-tools.digitalocean /> --}}
         </div>
     </x-section>
 

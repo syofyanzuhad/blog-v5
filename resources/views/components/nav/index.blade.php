@@ -17,7 +17,7 @@ Presents the nav index component UI and accepts component props, Blade attribute
         </div>
 
         <span class="text-base font-bold tracking-widest uppercase">
-            benjamincrozat.com
+            syofyanzuhad.dev
         </span>
     </a>
 
@@ -171,7 +171,7 @@ Presents the nav index component UI and accepts component props, Blade attribute
 
                 <x-dropdown.item
                     icon="heroicon-o-envelope"
-                    href="mailto:hello@benjamincrozat.com"
+                    href="mailto:mail@syofyanzuhad.dev"
                 >
                     Contact me
                 </x-dropdown.item>
@@ -203,7 +203,7 @@ Presents the nav index component UI and accepts component props, Blade attribute
 
                 <x-dropdown.item
                     icon="iconoir-github"
-                    href="https://github.com/benjamincrozat"
+                    href="https://github.com/syofyanzuhad"
                     target="_blank"
                 >
                     GitHub
@@ -211,7 +211,7 @@ Presents the nav index component UI and accepts component props, Blade attribute
 
                 <x-dropdown.item
                     icon="iconoir-linkedin"
-                    href="https://www.linkedin.com/in/benjamincrozat"
+                    href="https://www.linkedin.com/in/syofyan-zuhad"
                     target="_blank"
                 >
                     LinkedIn
@@ -219,7 +219,7 @@ Presents the nav index component UI and accepts component props, Blade attribute
 
                 <x-dropdown.item
                     icon="iconoir-x"
-                    href="https://x.com/benjamincrozat"
+                    href="https://x.com/syofyan_zuhad"
                     target="_blank"
                 >
                     X

@@ -106,7 +106,7 @@ Wraps public pages in the shared site chrome and accepts page metadata, flags, a
             @endif
 
             @empty($hideTopAd)
-                <x-ads.top.sevalla />
+                {{-- <x-ads.top.sevalla /> --}}
             @endempty
 
             <div x-intersect:leave="$dispatch('toggle-sticky-carousel')"></div>
