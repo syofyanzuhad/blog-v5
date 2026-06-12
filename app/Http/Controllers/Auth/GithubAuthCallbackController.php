@@ -18,14 +18,19 @@ class GithubAuthCallbackController extends Controller
     {
         $githubUser = Socialite::driver('github')->user();
 
+        $email = $githubUser->getEmail() ?: data_get($githubUser->getRaw(), 'notification_email');
+
+        if (empty($email)) {
+            $email = $githubUser->getId() . '+' . $githubUser->getNickname() . '@users.noreply.github.com';
+        }
+
         // Either create a brand new user or update their information.
-        $user = User::query()->updateOrCreate(['email' => $githubUser->getEmail()], [
+        $user = User::query()->updateOrCreate(['github_id' => $githubUser->getId()], [
             'name' => $githubUser->getName() ?? $githubUser->getNickname(),
-            'github_id' => $githubUser->getId(),
             'github_login' => $githubUser->getNickname(),
             'avatar' => $githubUser->getAvatar(),
             'github_data' => (array) $githubUser,
-            'email' => $githubUser->getEmail(),
+            'email' => $email,
             'refreshed_at' => now(),
         ]);
 

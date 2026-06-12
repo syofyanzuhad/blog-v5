@@ -97,7 +97,7 @@ it('updates an existing user and redirects to intended URL', function () {
 
         public function getEmail()
         {
-            return 'test@example.com';
+            return 'new@example.com';
         }
 
         public function getName()
@@ -109,6 +109,11 @@ it('updates an existing user and redirects to intended URL', function () {
         {
             return 'newusername';
         }
+
+        public function getRaw()
+        {
+            return [];
+        }
     });
 
     Socialite::shouldReceive('driver')
@@ -116,7 +121,8 @@ it('updates an existing user and redirects to intended URL', function () {
         ->andReturn($provider);
 
     $user = User::factory()->create([
-        'email' => 'test@example.com',
+        'github_id' => '999999',
+        'email' => 'old@example.com',
     ]);
 
     // Set the intended URL this way to
@@ -131,11 +137,123 @@ it('updates an existing user and redirects to intended URL', function () {
 
     $user->refresh();
 
-    expect($user->email)->toBe('test@example.com');
+    expect($user->email)->toBe('new@example.com');
     expect($user->name)->toBe('New Name');
     expect($user->github_id)->toBe('999999');
     expect($user->github_login)->toBe('newusername');
     expect($user->refreshed_at->getTimestamp())->toBe(now()->getTimestamp());
 
     Notification::assertNothingSentTo($user);
+});
+
+it('handles null email from GitHub by falling back to notification_email or noreply address', function () {
+    Date::setTestNow(now());
+
+    Notification::fake();
+
+    $provider = Mockery::mock(GithubProvider::class);
+    $provider->shouldReceive('user')->andReturn(new class
+    {
+        public function getAvatar()
+        {
+            return 'https://example.com/avatar.png';
+        }
+
+        public function getId()
+        {
+            return '123456';
+        }
+
+        public function getEmail()
+        {
+            return null;
+        }
+
+        public function getName()
+        {
+            return 'No Email User';
+        }
+
+        public function getNickname()
+        {
+            return 'noemailuser';
+        }
+
+        public function getRaw()
+        {
+            return [
+                'notification_email' => 'fallback@example.com',
+            ];
+        }
+    });
+
+    Socialite::shouldReceive('driver')
+        ->with('github')
+        ->andReturn($provider);
+
+    assertGuest()
+        ->get(route('auth.callback'))
+        ->assertRedirect();
+
+    assertAuthenticated();
+
+    assertDatabaseHas(User::class, [
+        'github_id' => '123456',
+        'email' => 'fallback@example.com',
+    ]);
+});
+
+it('handles null email and null notification_email by falling back to noreply address', function () {
+    Date::setTestNow(now());
+
+    Notification::fake();
+
+    $provider = Mockery::mock(GithubProvider::class);
+    $provider->shouldReceive('user')->andReturn(new class
+    {
+        public function getAvatar()
+        {
+            return 'https://example.com/avatar.png';
+        }
+
+        public function getId()
+        {
+            return '123456';
+        }
+
+        public function getEmail()
+        {
+            return null;
+        }
+
+        public function getName()
+        {
+            return 'No Email User';
+        }
+
+        public function getNickname()
+        {
+            return 'noemailuser';
+        }
+
+        public function getRaw()
+        {
+            return [];
+        }
+    });
+
+    Socialite::shouldReceive('driver')
+        ->with('github')
+        ->andReturn($provider);
+
+    assertGuest()
+        ->get(route('auth.callback'))
+        ->assertRedirect();
+
+    assertAuthenticated();
+
+    assertDatabaseHas(User::class, [
+        'github_id' => '123456',
+        'email' => '123456+noemailuser@users.noreply.github.com',
+    ]);
 });
