@@ -9,31 +9,28 @@ use App\Http\Controllers\Controller;
 use App\Actions\BuildBreadcrumbSchema;
 
 /**
- * Shows a blog post with its breadcrumb schema and related sidebar state.
+ * Checks whether a post may be shown before building its article page.
+ *
+ * A missing slug returns 404, a deleted post returns 410, and an unpublished post
+ * is hidden unless the visitor is the site administrator. A visible post also
+ * gets breadcrumbs, the latest comment not written by the owner, and the prompt
+ * used for follow-up questions.
  */
 class ShowPostController extends Controller
 {
-    /**
-     * The resolution logic is here to make the code easier to follow.
-     * In that case, no implicit binding since it needs to be custom.
-     */
     public function __invoke(Request $request, string $slug) : View
     {
-        // Retrieve the post, including soft-deleted ones.
         $post = Post::withTrashed()->where('slug', $slug)->first();
 
-        // If it doesn't exist at all, return 404.
         if (! $post) {
             abort(404);
         }
 
-        // If the post is soft-deleted, return 410 Gone.
         if ($post->trashed()) {
             abort(410);
         }
 
         if (! $request->user()?->isAdmin()) {
-            // If the post is not published, return 404.
             if (! $post->isPublished()) {
                 abort(404);
             }

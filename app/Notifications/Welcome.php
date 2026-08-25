@@ -10,7 +10,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
 /**
- * Builds the welcome notification.
+ * Welcomes a first-time GitHub user and shows what they can do on the blog.
+ *
+ * The sign-in callback sends this queued email only when it creates an account.
+ * It explains comments and link sharing, includes five popular published posts,
+ * and links to the feed and social accounts. Returning users do not receive it.
  */
 class Welcome extends Notification implements ShouldQueue
 {
@@ -41,13 +45,6 @@ class Welcome extends Notification implements ShouldQueue
             ));
 
         return $mailMessage
-            ->line('I also have a selection of [great tools](' . route('tools.index') . ') for developers:')
-            ->line('- [Unlock the power of Git on Mac and Windows](' . route('merchants.show', 'tower') . ')')
-            ->line('- [Know who visits your site](' . route('merchants.show', 'fathom-analytics') . ')')
-            ->line('- [Easily deploy PHP web apps](' . route('merchants.show', 'cloudways-php') . ')')
-            ->line('- [Send emails to your users](' . route('merchants.show', 'mailcoach') . ')')
-            ->line('- [Rank higher on Google](' . route('merchants.show', 'wincher') . ')')
-            ->line('- [Monitor your site\'s uptime, speed, and SSL](' . route('merchants.show', 'uptimia') . ')')
             ->line('And if you are old school like me, subscribe to the [Atom feed](' . route('feeds.main') . ').')
             ->line('Find me on [X](https://x.com/benjamincrozat) and [LinkedIn](https://www.linkedin.com/in/benjamincrozat/).');
     }

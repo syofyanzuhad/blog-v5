@@ -10,7 +10,6 @@ use Illuminate\Support\Collection;
 
 it('limits the latest posts collection to twelve entries', function () {
     Post::factory(20)->create(['published_at' => now()]);
-    ensureHomeCreator();
 
     get(route('home'))
         ->assertViewHas('latest', fn (Collection $latest) => 12 === $latest->count()
@@ -18,25 +17,37 @@ it('limits the latest posts collection to twelve entries', function () {
 });
 
 it('shows twelve approved links on the homepage', function () {
-    Link::factory(20)->approved()->create();
-    ensureHomeCreator();
+    $olderUser = User::factory()->create([
+        'github_data' => ['id' => 123],
+    ]);
+
+    Link::factory(20)->for($olderUser)->approved()->create();
 
     get(route('home'))
         ->assertViewHas('links', fn (Collection $links) => 12 === $links->count()
             && $links->every(fn (Link $link) => $link->relationLoaded('post') && $link->relationLoaded('user')));
 });
 
-it("exposes Benjamin's about section to the view", function () {
-    $creator = ensureHomeCreator();
+it('does not load community preview images on the homepage', function () {
+    $link = Link::factory()->approved()->create([
+        'image_url' => 'https://example.com/large-community-preview.jpg',
+    ]);
 
     get(route('home'))
-        ->assertViewHas('aboutUser', fn (User $aboutUser) => $aboutUser->is($creator));
+        ->assertOk()
+        ->assertSee($link->title)
+        ->assertDontSee($link->image_url, escape: false);
+
+    get(route('links.index'))
+        ->assertOk()
+        ->assertSee($link->image_url, escape: false);
 });
 
-function ensureHomeCreator() : User
-{
-    return User::query()->firstOrCreate(
-        ['github_login' => 'benjamincrozat'],
-        User::factory()->make(['github_login' => 'benjamincrozat'])->getAttributes(),
-    );
-}
+it('omits the homepage calls to action and about links', function () {
+    get(route('home'))
+        ->assertDontSee('Who the F are you?')
+        ->assertDontSee('Start reading')
+        ->assertDontSee('About me')
+        ->assertDontSee(route('home') . '#about', escape: false)
+        ->assertViewMissing('aboutUser');
+});

@@ -5,6 +5,7 @@ use App\Models\Category;
 
 use function Pest\Laravel\get;
 
+use Illuminate\Support\Facades\Route;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 it('shows a category', function () {
@@ -13,7 +14,34 @@ it('shows a category', function () {
     get(route('categories.show', $category))
         ->assertOk()
         ->assertViewIs('categories.show')
-        ->assertViewHas('category', $category);
+        ->assertViewHas('category', $category)
+        ->assertViewHas('breadcrumbs', [
+            ['label' => 'Home', 'url' => route('home')],
+            ['label' => $category->name],
+        ])
+        ->assertViewHas('breadcrumbSchema', [
+            '@context' => 'https://schema.org',
+            '@type' => 'BreadcrumbList',
+            'itemListElement' => [
+                [
+                    '@type' => 'ListItem',
+                    'position' => 1,
+                    'name' => 'Home',
+                    'item' => route('home'),
+                ],
+                [
+                    '@type' => 'ListItem',
+                    'position' => 2,
+                    'name' => $category->name,
+                ],
+            ],
+        ]);
+});
+
+it('does not expose a categories index', function () {
+    expect(Route::has('categories.index'))->toBeFalse();
+
+    get('/categories')->assertNotFound();
 });
 
 it('throws a 404 if the category does not exist', function () {
@@ -144,11 +172,16 @@ it('paginates 24 posts per page and keeps the category name visible', function (
     // Page 1: 24 items.
     get(route('categories.show', $category))
         ->assertOk()
+        ->assertSee('<link rel="canonical" href="' . route('categories.show', $category) . '" />', escape: false)
         ->assertViewHas('posts', fn (LengthAwarePaginator $p) => 24 === $p->perPage() && 24 === $p->count());
 
     // Page 2: 6 items.
     get(route('categories.show', [$category, 'page' => 2]))
         ->assertOk()
         ->assertSee($category->name)
+        ->assertSee('<link rel="canonical" href="' . route('categories.show', ['category' => $category, 'page' => 2]) . '" />', escape: false)
         ->assertViewHas('posts', fn (LengthAwarePaginator $p) => 2 === $p->currentPage() && 6 === $p->count());
+
+    get(route('categories.show', [$category, 'page' => 3]))
+        ->assertNotFound();
 });

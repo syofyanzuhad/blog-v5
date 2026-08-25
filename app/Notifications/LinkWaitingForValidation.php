@@ -10,7 +10,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
 /**
- * Builds the link waiting for validation notification.
+ * Emails the site owner when a new community link needs review.
+ *
+ * The last wizard step sends this queued message after saving the pending link.
+ * It names the submitter and destination and links to the submitted URL. It does
+ * not approve or decline the link.
  */
 class LinkWaitingForValidation extends Notification implements ShouldQueue
 {
@@ -29,6 +33,6 @@ class LinkWaitingForValidation extends Notification implements ShouldQueue
             ->subject('A link is waiting for validation')
             ->greeting('Heads up!')
             ->line("A link to {$this->link->domain} from {$this->link->user->name} is waiting for validation.")
-            ->action('Check', route('filament.admin.resources.links.index'));
+            ->action('Open link', $this->link->url);
     }
 }

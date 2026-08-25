@@ -9,7 +9,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 
 /**
- * Builds the new user created notification.
+ * Emails the site owner when GitHub sign-in creates a new local user.
+ *
+ * The sign-in callback sends this queued message only for a first-time account.
+ * Returning users do not trigger it. The email reports the new user's name and
+ * does not change their account or session.
  */
 class NewUserCreated extends Notification implements ShouldQueue
 {
@@ -28,7 +32,6 @@ class NewUserCreated extends Notification implements ShouldQueue
     {
         return (new MailMessage)
             ->subject('A new user was just created')
-            ->line("{$this->user->name} has just joined the platform.")
-            ->action('Check Profile', route('authors.show', $this->user->slug));
+            ->line("{$this->user->name} has just joined the platform.");
     }
 }

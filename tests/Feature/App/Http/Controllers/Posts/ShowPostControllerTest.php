@@ -20,6 +20,8 @@ it('shows a post', function () {
             ->first())
         ->assertSee("<title>{$post->serp_title}</title>", escape: false)
         ->assertSee("<meta name=\"description\" content=\"{$post->serp_description}\" />", escape: false)
+        ->assertSee($post->user->name)
+        ->assertDontSee('/authors/', escape: false)
         ->assertSee('Ask ChatGPT')
         ->assertSee('Ask Claude')
         ->assertDontSee('Did you like this article? Then, keep learning:');
@@ -51,7 +53,8 @@ it('renders NewsArticle schema for eligible news posts while keeping the simple 
         ->assertSee('"@type": "NewsArticle"', escape: false)
         ->assertSee('"mainEntityOfPage"', escape: false)
         ->assertSee('"publisher"', escape: false)
-        ->assertSee(route('authors.show', $post->user->slug), escape: false)
+        ->assertSee('"author"', escape: false)
+        ->assertDontSee('/authors/', escape: false)
         ->assertSee($expectedDate)
         ->assertDontSee('UTC');
 
@@ -75,6 +78,18 @@ it('keeps standard article schema for non-news posts', function () {
     get(route('posts.show', $post))
         ->assertOk()
         ->assertSee('"@type": "Article"', escape: false)
+        ->assertDontSee('"@type": "NewsArticle"', escape: false);
+});
+
+it('omits article schema when another URL is canonical', function () {
+    $post = Post::factory()->create([
+        'canonical_url' => 'https://example.com/original-article',
+    ]);
+
+    get(route('posts.show', $post))
+        ->assertOk()
+        ->assertSee('<link rel="canonical" href="https://example.com/original-article" />', escape: false)
+        ->assertDontSee('"@type": "Article"', escape: false)
         ->assertDontSee('"@type": "NewsArticle"', escape: false);
 });
 
@@ -135,16 +150,6 @@ it('returns 410 gone when the post is soft deleted', function () {
 
     get(route('posts.show', $post))
         ->assertStatus(410);
-});
-
-it('hides the sticky carousel for commercial posts', function () {
-    $post = Post::factory()->create([
-        'is_commercial' => true,
-    ]);
-
-    get(route('posts.show', $post))
-        ->assertOk()
-        ->assertDontSee('Black Friday');
 });
 
 it('builds a single blog breadcrumb trail for posts and omits the current page URL from schema', function () {

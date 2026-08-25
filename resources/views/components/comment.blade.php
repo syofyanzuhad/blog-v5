@@ -17,13 +17,15 @@ Renders a comment thread item and accepts the comment, parent reply target, attr
             loading="lazy"
             src="{{ $commentUser->avatar }}"
             alt="{{ $commentUser->name ?? 'Deleted user' }}"
+            width="32"
+            height="32"
             class="flex-none mt-1 rounded-full ring-1 shadow-sm shadow-black/5 ring-black/10 size-7 md:size-8"
         />
 
         <div class="grow">
             <div class="flex gap-4 justify-between">
                 <div>
-                    <a href="{{ data_get($commentUser->github_data, 'user.html_url') ?? '#' }}" target="_blank" class="font-medium">
+                    <a href="{{ $commentUser->github_url }}" target="_blank" class="font-medium">
                         {{ $commentUser->name ?? 'Deleted user' }}
                     </a>
 
@@ -34,17 +36,6 @@ Renders a comment thread item and accepts the comment, parent reply target, attr
 
                 @empty($hideActionButtons)
                     <div class="flex gap-2 items-center">
-                        @if ($user?->isAdmin())
-                            <a
-                                wire:navigate
-                                href="{{ route('filament.admin.resources.comments.edit', $comment) }}"
-                                class="grid place-items-center bg-gray-100 rounded-full transition-colors hover:bg-gray-200 size-8"
-                            >
-                                <x-heroicon-o-pencil class="size-4" />
-                                <span class="sr-only">Edit</span>
-                            </a>
-                        @endcan
-
                         @can('delete', $comment)
                             <button
                                 class="grid place-items-center text-red-600 bg-red-50 rounded-full transition-colors hover:bg-red-100 size-8"

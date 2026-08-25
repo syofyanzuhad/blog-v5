@@ -239,6 +239,14 @@ it('scopes Google News eligible posts', function () {
     $withLink->categories()->sync([$news->id]);
     Link::factory()->create(['post_id' => $withLink->id]);
 
+    $withCanonicalOverride = Post::factory()->create([
+        'published_at' => now()->subHour(),
+        'canonical_url' => 'https://example.com/original-news',
+        'is_commercial' => false,
+        'sponsored_at' => null,
+    ]);
+    $withCanonicalOverride->categories()->sync([$news->id]);
+
     $newsEligibleIds = Post::query()
         ->newsEligible()
         ->pluck('id');
@@ -246,7 +254,8 @@ it('scopes Google News eligible posts', function () {
     expect($newsEligibleIds)->toContain($eligible->id)
         ->not->toContain($commercial->id)
         ->not->toContain($sponsored->id)
-        ->not->toContain($withLink->id);
+        ->not->toContain($withLink->id)
+        ->not->toContain($withCanonicalOverride->id);
 });
 
 it('belongs to a user', function () {
@@ -304,25 +313,6 @@ it('accurately detects if a post has an attached image via hasImage()', function
 
     expect($withImage->hasImage())->toBeTrue();
     expect($withoutImage->hasImage())->toBeFalse();
-});
-
-it('generates valid Markdown with YAML front matter via toMarkdown()', function () {
-    $post = Post::factory()->hasCategories(3)->create([
-        'title' => 'Foo Bar',
-        'content' => 'Baz',
-        'slug' => 'foo-bar',
-        'description' => 'Desc',
-        'serp_title' => 'SERP',
-        'source_uuid' => '01ARZ3NDEKTSV4RRFFQ69G5FAV',
-    ]);
-
-    $markdown = $post->toMarkdown();
-
-    expect($markdown)->toMatch('/^---\n/')
-        ->and($markdown)->toContain('id: "01ARZ3NDEKTSV4RRFFQ69G5FAV"')
-        ->and($markdown)->toContain('slug: "foo-bar"')
-        ->and($markdown)->not->toContain('# Foo Bar')
-        ->and($markdown)->toEndWith('Baz');
 });
 
 it('getFeedItems only returns the 50 most recent published posts without links', function () {

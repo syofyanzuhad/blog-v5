@@ -39,11 +39,11 @@ Presents the nav index component UI and accepts component props, Blade attribute
         </x-nav.item>
 
         <x-nav.item
-            active-icon="heroicon-s-computer-desktop"
-            icon="heroicon-o-computer-desktop"
-            href="{{ route('tools.index') }}"
+            type="button"
+            icon="heroicon-o-magnifying-glass"
+            @click="$dispatch('search')"
         >
-            Tools
+            Search
         </x-nav.item>
 
         @auth
@@ -52,6 +52,8 @@ Presents the nav index component UI and accepts component props, Blade attribute
                     <img
                         src="{{ auth()->user()->avatar }}"
                         alt="{{ auth()->user()->name }}'s GitHub avatar"
+                        width="28"
+                        height="28"
                         class="mx-auto rounded-full size-6 md:size-7"
                     />
 
@@ -66,13 +68,6 @@ Presents the nav index component UI and accepts component props, Blade attribute
                     <x-dropdown.divider />
 
                     @if (auth()->user()->isAdmin())
-                        <x-dropdown.item
-                            icon="heroicon-o-adjustments-horizontal"
-                            href="{{ route('filament.admin.pages.dashboard') }}"
-                        >
-                            Admin
-                        </x-dropdown.item>
-
                         <x-dropdown.item
                             icon="icon-horizon"
                             href="{{ route('horizon.index') }}"
@@ -139,54 +134,10 @@ Presents the nav index component UI and accepts component props, Blade attribute
                 </x-dropdown.divider>
 
                 <x-dropdown.item
-                    icon="heroicon-o-tag"
-                    wire:navigate
-                    href="{{ route('categories.index') }}"
-                >
-                    Categories
-                </x-dropdown.item>
-
-                <x-dropdown.item
-                    icon="heroicon-o-magnifying-glass"
-                    @click="$dispatch('search'); open = false"
-                >
-                    Search
-                </x-dropdown.item>
-
-                <x-dropdown.item
-                    icon="heroicon-o-megaphone"
-                    description="Sponsor me and show off your business to {{ Number::format($visitors) }} monthly visitors."
-                    wire:navigate
-                    href="{{ route('advertise') }}"
-                >
-                    Show off your business
-                </x-dropdown.item>
-
-                <x-dropdown.item
-                    icon="heroicon-o-question-mark-circle"
-                    href="{{ route('home') }}#about"
-                >
-                    About me
-                </x-dropdown.item>
-
-                <x-dropdown.item
                     icon="heroicon-o-envelope"
                     href="mailto:mail@syofyanzuhad.dev"
                 >
                     Contact me
-                </x-dropdown.item>
-
-                <x-dropdown.divider>
-                    Freebies
-                </x-dropdown.divider>
-
-                <x-dropdown.item
-                    icon="iconoir-git-fork"
-                    description="This platform is open source and the codebase is becoming bigger fast. There's a lot to learn and this is free."
-                    href="https://github.com/benjamincrozat/blog-v5"
-                    target="_blank"
-                >
-                    Fork the source code
                 </x-dropdown.item>
 
                 <x-dropdown.divider>
