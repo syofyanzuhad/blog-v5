@@ -2,40 +2,28 @@
 
 namespace App\Models;
 
-use Filament\Panel;
-use Illuminate\Support\Str;
 use Database\Factories\UserFactory;
 use Illuminate\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
-use Lab404\Impersonate\Models\Impersonate;
-use Filament\Models\Contracts\FilamentUser;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 
 /**
- * Represents user records.
+ * Stores a GitHub user who can take part in the blog.
+ *
+ * GitHub sign-in and refresh jobs keep the profile data used for avatar and link
+ * fallbacks. A user can own posts, submit links, write comments, and receive
+ * queued email. Admin access belongs only to the site's fixed owner login; there
+ * is no general role field.
  */
-class User extends Authenticatable implements FilamentUser
+#[Hidden(['password', 'remember_token'])]
+class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Impersonate, MustVerifyEmail, Notifiable;
-
-    /**
-     * @var array<int, string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    protected static function booted() : void
-    {
-        static::creating(
-            fn (User $user) => $user->slug = Str::slug($user->name)
-        );
-    }
+    use HasFactory, MustVerifyEmail, Notifiable;
 
     /**
      * @return array<string, string>
@@ -81,34 +69,16 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Comment::class);
     }
 
-    public function about() : Attribute
+    public function githubUrl() : Attribute
     {
         return Attribute::make(
-            fn () => $this->biography ?? data_get($this->github_data, 'user.bio', ''),
-        );
-    }
-
-    public function blogUrl() : Attribute
-    {
-        return Attribute::make(
-            fn () => data_get($this->github_data, 'user.blog'),
-        );
-    }
-
-    public function company() : Attribute
-    {
-        return Attribute::make(
-            fn () => data_get($this->github_data, 'user.company'),
+            fn () => data_get($this->github_data, 'user.html_url')
+                ?? 'https://github.com/' . $this->github_login,
         );
     }
 
     public function isAdmin() : bool
     {
         return 'syofyanzuhad' === $this->github_login;
-    }
-
-    public function canAccessPanel(Panel $panel) : bool
-    {
-        return $this->isAdmin();
     }
 }

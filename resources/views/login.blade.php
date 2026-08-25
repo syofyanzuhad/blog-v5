@@ -3,7 +3,6 @@ Displays the login view.
 --}}
 
 <x-app
-    :hide-top-ad="true"
     :hide-footer="true"
     :hide-navigation="true"
     title="Sign in"
@@ -34,7 +33,7 @@ Displays the login view.
                 </div>
 
                 <div class="mt-2 text-gray-600 text-balance sm:text-lg md:text-xl">
-                    By signing in, you will be able to use the comments section and share links with my {{ Number::format($visitors) }} monthly visitors.
+                    By signing in, you will be able to use the comments section and share links with my 50,000 monthly visitors.
                 </div>
 
                 <x-btn href="{{ route('auth.redirect') }}" primary no-wire-navigate class="mt-8">

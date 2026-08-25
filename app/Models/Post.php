@@ -10,7 +10,6 @@ use Database\Factories\PostFactory;
 use App\Models\Traits\PostSearchable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
-use App\Models\Traits\PostTransformable;
 use Illuminate\Database\Eloquent\Builder;
 use App\Models\Traits\PostHasTableOfContents;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -23,12 +22,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
- * Represents post records.
+ * Stores the database copy used to publish a blog article.
+ *
+ * It decides whether an article is published, locally canonical, sponsored, or
+ * allowed in Google News and connects it to its author, categories, comments,
+ * and community link. It also renders Markdown, finds the image URL, and estimates
+ * reading time. Slugs are public URLs, deleted rows remain available for 410
+ * responses, and posts with a source UUID get their content from Markdown files.
  */
 class Post extends Model implements Feedable
 {
     /** @use HasFactory<PostFactory> */
-    use HasFactory, PostFeedable, PostHasTableOfContents, PostSearchable, PostSlugable, PostTransformable, SoftDeletes;
+    use HasFactory, PostFeedable, PostHasTableOfContents, PostSearchable, PostSlugable, SoftDeletes;
 
     public const NEWS_CATEGORY_SLUG = 'news';
 
@@ -50,6 +55,16 @@ class Post extends Model implements Feedable
         $query
             ->whereNotNull('published_at')
             ->where('published_at', '<=', now());
+    }
+
+    #[Scope]
+    protected function withoutCanonicalOverride(Builder $query) : void
+    {
+        $query->where(function (Builder $query) : void {
+            $query
+                ->whereNull('canonical_url')
+                ->orWhere('canonical_url', '');
+        });
     }
 
     #[Scope]
@@ -81,6 +96,7 @@ class Post extends Model implements Feedable
     {
         $query
             ->published()
+            ->withoutCanonicalOverride()
             ->news()
             ->where('is_commercial', false)
             ->whereNull('sponsored_at')
@@ -154,7 +170,7 @@ class Post extends Model implements Feedable
 
     public function isNewsEligible() : bool
     {
-        if (! $this->isPublished() || $this->is_commercial || $this->isSponsored() || ! $this->isNews()) {
+        if (! $this->isPublished() || filled($this->canonical_url) || $this->is_commercial || $this->isSponsored() || ! $this->isNews()) {
             return false;
         }
 

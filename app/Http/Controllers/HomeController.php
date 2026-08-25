@@ -4,11 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Link;
 use App\Models\Post;
-use App\Models\User;
 use Illuminate\View\View;
 
 /**
- * Builds the public home page with recent posts, links, and the about profile.
+ * Loads the article and community-link sections for the public home page.
+ *
+ * It shows up to 12 published posts, with recent sponsors first, and up to 12
+ * approved links. Posts that already represent community links are left out of
+ * the article section so the same item does not appear twice.
  */
 class HomeController extends Controller
 {
@@ -29,10 +32,6 @@ class HomeController extends Controller
             ->limit(12)
             ->get();
 
-        $aboutUser = User::query()
-            ->where('github_login', 'benjamincrozat')
-            ->first();
-
-        return view('home', compact('latest', 'links', 'aboutUser'));
+        return view('home', compact('latest', 'links'));
     }
 }

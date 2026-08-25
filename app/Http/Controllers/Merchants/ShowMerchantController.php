@@ -8,7 +8,11 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 
 /**
- * Redirects merchant slugs to their configured outbound recommendation links.
+ * Sends a recommendation link to the merchant URL set for its slug.
+ *
+ * It finds the slug across the grouped merchant settings and keeps the incoming
+ * query values on the destination. An unknown slug returns 404, so only listed
+ * recommendations can send visitors away from the site.
  */
 class ShowMerchantController extends Controller
 {
@@ -16,11 +20,7 @@ class ShowMerchantController extends Controller
     {
         abort_if(
             ! $merchantLink = collect(config('merchants'))
-                ->flatMap(function (array $items) {
-                    return collect($items)->map(
-                        fn (mixed $item) => $item['link'] ?? $item
-                    );
-                })
+                ->flatMap(fn (array $items) => $items)
                 ->get($slug),
             404
         );

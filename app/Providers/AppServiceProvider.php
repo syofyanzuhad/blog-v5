@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Models\Metric;
 use Livewire\Livewire;
 use Carbon\CarbonImmutable;
 use League\Flysystem\Filesystem;
@@ -20,15 +19,15 @@ use Illuminate\Filesystem\FilesystemAdapter;
 use App\Support\BrowsershotPostImageScreenshotter;
 
 /**
- * Bootstraps shared bindings, storage extensions, and global view data.
+ * Sets shared application rules and bindings when Laravel starts.
+ *
+ * It connects the screenshot interface to Browsershot and uses immutable dates.
+ * It also registers the link wizard and sets Eloquent safety rules. Finally, it
+ * adds the Cloudflare Images disk and gives every view the current user. These
+ * settings affect every web request and command.
  */
 class AppServiceProvider extends ServiceProvider
 {
-    /**
-     * Cached visitors count.
-     */
-    protected ?int $visitors = 50000;
-
     public function register() : void
     {
         $this->app->bind(PostImageScreenshotter::class, BrowsershotPostImageScreenshotter::class);
@@ -36,7 +35,6 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot() : void
     {
-        // Not necessary, but why not?
         Date::use(CarbonImmutable::class);
 
         Livewire::component('link-wizard', LinkWizard::class);
@@ -45,12 +43,8 @@ class AppServiceProvider extends ServiceProvider
 
         Model::automaticallyEagerLoadRelationships();
 
-        // This one helps you catch lots of issues. Check
-        // the source code to see what it does.
         Model::shouldBeStrict(! app()->isProduction());
 
-        // Be careful with unguarded models! But
-        // this trick removes a lot of friction.
         Model::unguard();
 
         Storage::extend('cloudflare-images', function ($app, array $config) {
@@ -68,12 +62,6 @@ class AppServiceProvider extends ServiceProvider
 
         View::composer('*', fn (\Illuminate\View\View $view) => $view->with([
             'user' => auth()->user(),
-
-            'visitors' => $this->visitors ??= cache()->remember(
-                'visitors', 600, fn () => Metric::query()
-                    ->where('key', 'visitors')
-                    ->value('value') ?? 0
-            ),
         ]));
     }
 }
