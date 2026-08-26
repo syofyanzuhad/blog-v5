@@ -1,0 +1,28 @@
+{
+    "agents": [
+        "claude_code",
+        "codex",
+        "cursor",
+        "opencode",
+        "zed",
+        "antigravity",
+        "copilot"
+    ],
+    "cloud": true,
+    "guidelines": true,
+    "mcp": true,
+    "nightwatch": true,
+    "sail": false,
+    "skills": [
+        "infer-conventions",
+        "laravel-best-practices",
+        "testing-best-practices",
+        "configuring-horizon",
+        "configure-nightwatch",
+        "scout-development",
+        "socialite-development",
+        "livewire-development",
+        "tailwindcss-development",
+        "deploying-laravel-cloud"
+    ]
+}
