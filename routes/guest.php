@@ -29,6 +29,9 @@ Route::livewire('/links/create', LinkWizard::class)
 Route::get('/links', ListLinksController::class)
     ->name('links.index');
 
+Route::view('/card', 'card')
+    ->name('card');
+
 Route::get('/jobs', fn () => abort(410));
 Route::get('/jobs/{any}', fn () => abort(410))
     ->where('any', '.*');

@@ -134,6 +134,14 @@ Presents the nav index component UI and accepts component props, Blade attribute
                 </x-dropdown.divider>
 
                 <x-dropdown.item
+                    icon="heroicon-o-identification"
+                    wire:navigate
+                    href="{{ route('card') }}"
+                >
+                    Digital Card
+                </x-dropdown.item>
+
+                <x-dropdown.item
                     icon="heroicon-o-envelope"
                     href="mailto:mail@syofyanzuhad.dev"
                 >
